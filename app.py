@@ -1,6 +1,5 @@
 import customtkinter
 import os
-from PIL import Image
 import pickle
 
 import os.path
@@ -16,7 +15,6 @@ import re
 from tqdm import tqdm
 import requests
 from bs4 import BeautifulSoup
-import tkinter as tk
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -150,19 +148,11 @@ def investigate_link(url):
 
 
 def compile_emails():
-    """Shows basic usage of the Gmail API.
-        Lists the user's Gmail labels.
-        """
-
     dict_of_papers = {}
 
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -171,7 +161,6 @@ def compile_emails():
                 "credentials.json", SCOPES
             )
             creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
         with open("token.json", "w") as token:
             token.write(creds.to_json())
 
@@ -192,7 +181,6 @@ def compile_emails():
                 links = re.findall('"https:[\/]{2}huggingface.co\/papers\/[0-1a-zA-z\d.?=&-]*"', body)
                 for link in links:
                     paper_obj = investigate_link(link[1:-1])
-                    #print(paper_obj)
                     dict_of_papers[subject].append(paper_obj)
 
         return dict_of_papers
@@ -210,10 +198,12 @@ class App(customtkinter.CTk):
 
         displayed_keys = []
 
+        # Load Papers from example text
         dict_of_papers = None
         with open("./example_dict.pkl", 'rb') as f:
             dict_of_papers = pickle.load(f)
 
+        # Load Papers from GMAIL
         '''dict_of_papers = compile_emails()
         with open("./example_dict.pkl", 'wb') as f:
             pickle.dump(dict_of_papers, f)'''
